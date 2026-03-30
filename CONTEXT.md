@@ -293,3 +293,82 @@ PESOS_ASPECTO = {
   - Regla reforzada: en la BD solo entra texto en castellano; si falla la traducción, se descarta la fila
   - Decisión adicional:
     - `Robert Hand / Planets in Transit` no se usa como fuente scrapeada desde Internet Archive por copyright y acceso restringido
+
+### 2026-03-30 — Sesión 3 (Claude)
+- Retomado el proyecto tras sesión 2 con Codex
+- Verificado estado real del corpus.db:
+  - `transito`:       745 filas (354 GV + 391 AK)  ✅
+  - `sinastria`:      375 filas (GV)               ✅
+  - `aspecto_natal`:  368 filas (334 AK + 34 CA)   ✅
+  - `natal_planeta_signo`:  0 filas                ❌ — AGUJERO PRINCIPAL
+  - `natal_planeta_casa`:   0 filas                ❌ — AGUJERO PRINCIPAL
+  - TOTAL: 1488 filas
+- Situación: el corpus de tránsitos, sinastría y aspectos está bien cubierto
+- El problema urgente es la ausencia total de textos natales (planeta en signo / planeta en casa)
+- Opciones debatidas con el usuario:
+  - Arreglar scraper CA para tapar el agujero natal (URLs reales son slugs WordPress /sun-in-aries/)
+  - Comenzar backend FastAPI + motor pyswisseph
+  - Ambas en paralelo
+- Motor de traducción pendiente de decidir: deep-translator/Google vs DeepL vs Gemini API
+- Pendiente: decisión del usuario sobre siguiente paso
+
+### 2026-03-30 — Sesión 4 (Claude)
+- Verificada cobertura real del corpus con check_coverage.py:
+  - transito:       328/330  (99%) — 2 faltantes son combinaciones astronómicamente imposibles ✅
+  - sinastria:      375/450  (83%) — 75 huecos detectados
+  - aspecto_natal:  208/225  (92%) — 17 faltantes son aspectos imposibles ✅
+- Ejecutado fill_sinastria.py: +45 filas insertadas (todos los LUNA_X via URL inversa GV)
+  - Resultado: sinastria 420/450 (93%) — 30 irrecuperables son planetas transpersonales entre sí ✅
+  - sinastria efectivamente COMPLETA para uso práctico
+- Exploración de fuentes para natal_planeta_signo y natal_planeta_casa:
+  - Probados: astrolibrary.org, astro-seek.com, astrotheme.com, astromatrix.org, astro.com
+  - astro.com: JavaScript wall, inaccesible ❌
+  - astromatrix.org: timeout ❌
+  - astrotheme.com: responde pero solo devuelve nav/ephemeris, sin texto interpretativo ❌
+  - **astrolibrary.org: ELEGIDA para natal_planeta_signo** ✅
+    - URL: /interpretations/[planeta]/  (ej: /interpretations/sun/)
+    - Una página por planeta con los 12 signos (H2/H3 por signo)
+    - Solo 10 peticiones HTTP para los 120 textos
+    - Calidad alta, textos propios de Astrolibrary
+    - Textos en inglés → traducir con Gemini API
+  - **astro-seek.com: ELEGIDA para natal_planeta_casa** ✅
+    - URL: /[planeta]-in-[N]th-house-astrology-meaning  (ej: /sun-in-1st-house-astrology-meaning)
+    - Patrón limpio y consistente para los 120 textos (10 planetas × 12 casas)
+    - Textos en inglés → traducir con Gemini API
+- Creado: scraper/sources/astrolibrary.py (signos + casas)
+  - dry-run validado: 12/12 signos para Sol extraídos correctamente
+  - Textos de 2000-4500 chars por entrada, calidad excelente
+  - PENDIENTE: configurar GEMINI_API_KEY para ejecutar real
+    - El usuario debe ejecutar: set GEMINI_API_KEY=su_clave
+    - Luego: python scraper/sources/astrolibrary.py --tipo signos
+    - Y:     python scraper/sources/astrolibrary.py --tipo casas
+
+### Estado corpus.db tras sesión 4:
+- transito:              745 filas  (99%) ✅
+- sinastria:             420 filas  (93%) ✅ efectivamente completo
+- aspecto_natal:         368 filas  (92%) ✅
+- natal_planeta_signo:     0 filas   (0%) ← PENDIENTE ejecutar con GEMINI_API_KEY
+- natal_planeta_casa:      0 filas   (0%) ← PENDIENTE ejecutar con GEMINI_API_KEY
+- TOTAL: 1533 filas
+
+### Próximos pasos
+1. Configurar GEMINI_API_KEY y ejecutar astrolibrary.py --tipo all
+   → Objetivo: +120 natal_planeta_signo + 120 natal_planeta_casa = ~240 nuevas filas
+2. Con corpus completo, pasar a backend FastAPI + motor pyswisseph
+
+### 2026-03-30 — Sesión 5 (Claude)
+- **CORPUS COMPLETADO** — 1766 filas totales en corpus.db
+  - transito:           745 filas  (99%)  ✅ — 2 huecos = aspectos astronómicamente imposibles
+  - sinastria:          420 filas  (93%)  ✅ — 30 huecos = planetas transpersonales entre sí
+  - aspecto_natal:      368 filas  (92%)  ✅ — 17 huecos = aspectos imposibles (Sol cuadrado Mercurio, etc.)
+  - natal_planeta_signo: 113 filas (100% real) ✅ — algunos planetas lentos solo cubren los signos posibles
+  - natal_planeta_casa:  120 filas (100%) ✅ — 10 planetas × 12 casas
+- Fuentes usadas:
+  - Grupo Venus → transito + sinastria (castellano nativo)
+  - Astrology King → aspecto_natal + transito adicional (traducido)
+  - Astrolibrary.org → natal_planeta_signo + natal_planeta_casa (traducido con deep-translator)
+- Motor de traducción: deep-translator (Google Translate, sin cuota, sin API key)
+  - Calidad verificada: buena para textos astrológicos
+  - Gemini API (cuota agotada en sesión) — puede usarse después para re-traducir si se desea mejorar calidad
+
+### ✅ CORPUS TERMINADO — Próximo paso: BACKEND FastAPI

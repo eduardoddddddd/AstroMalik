@@ -1,5 +1,46 @@
+# Python
 __pycache__/
-*.py[cod]
-.pytest_cache/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
 
-temp_personas_mod.html
+# Entornos virtuales
+venv/
+.env
+.venv/
+
+# Logs
+logs/
+*.log
+
+# Ficheros temporales de debug/prueba (no son parte del proyecto)
+debug_*.py
+probe_*.py
+test_gemini.py
+delete_english.py
+run_debug.py
+test_scraper.py
+test_grupovenus.py
+mkdir_logs.bat
+run_astrolibrary.bat
+
+# Scrapers obsoletos/patch
+scraper/sources/astrolibrary_casas_patch.py
+scraper/analyze_grupovenus.py
+
+# JSONs de análisis temporales
+scraper/grupovenus_analysis.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
