@@ -41,6 +41,13 @@ scraper/grupovenus_analysis.json
 .idea/
 *.swp
 
+# Node (frontend)
+node_modules/
+
+# Python API
+backend/.venv/
+backend/data/user.db
+
 # OS
 .DS_Store
 Thumbs.db

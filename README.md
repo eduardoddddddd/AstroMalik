@@ -1,17 +1,112 @@
-# AstroMalik 🌟
+# AstroMalik
 
-Aplicación web de astrología completa en castellano. Cartas natales, tránsitos por intensidad, sinastría.
+Aplicación web de astrología completa en castellano. Cartas natales con interpretaciones del corpus, tránsitos por intensidad y sinastría.
 
-**Siempre online y gratuito** — GitHub Pages + HuggingFace Spaces.
+**Repo:** https://github.com/eduardoddddddd/AstroMalik  
+**Stack:** React + TypeScript + Vite · FastAPI + pyswisseph · SQLite
 
-## Módulos
-- Carta natal completa con textos multiautor
-- Tránsitos por intensidad y rango de fechas
-- Sinastría
+---
 
-## Instrucciones de desarrollo
-Ver `CONTEXT.md` para estado del proyecto y arquitectura completa.
+## Lo que hay ahora mismo
 
-## Deploy
-- Frontend: GitHub Pages (`/frontend`)
-- Backend: HuggingFace Spaces Docker (`/backend`)
+### Frontend (`apps/web`)
+- Formulario de carta natal — fecha (DD/MM/YYYY) · hora 24h · zona IANA · lugar con coordenadas
+- Búsqueda de lugar: base local `cities_seed.json` + Nominatim/OpenStreetMap
+- Motor de cálculo: **misma lógica que AstroBot** (pyswisseph, Placidus)
+- Tabla de posiciones: planetas, grado, signo, casa, retrogradación
+- **Interpretaciones del corpus** en acordeón:
+  - Planetas en signo y casa agrupados por planeta (un ítem = signo + casa juntos)
+  - Aspectos natales separados
+- Guardar / recuperar cartas en base local (`user.db`, SQLite)
+- Diseño crema/papel tipo Claude Desktop
+
+### Backend (`backend/`)
+- FastAPI + uvicorn, puerto 8765
+- `POST /api/charts/natal` — calcula carta natal y devuelve posiciones + interpretaciones
+- `GET  /api/places/search` — búsqueda de lugar (seed + Nominatim)
+- `GET/POST/DELETE /api/saved-charts` — CRUD de cartas guardadas en `user.db`
+- `GET /api/health` + `GET /api/corpus/stats`
+- Zona horaria correcta: `zoneinfo` + `tzdata` — hora local → UT antes de pyswisseph
+
+### Corpus (`backend/data/corpus.db`) — 1766 filas
+| Tipo | Filas | Fuentes | Cobertura |
+|---|---|---|---|
+| `transito` | 745 | Grupo Venus + Astrology King | 99% |
+| `sinastria` | 420 | Grupo Venus | 93% |
+| `aspecto_natal` | 368 | Astrology King + Café Astrology | 92% |
+| `natal_planeta_signo` | 113 | Astrolibrary | 100% real |
+| `natal_planeta_casa` | 120 | Astro-seek | 100% |
+
+---
+
+## Estructura del repositorio
+
+```
+AstroMalik/
+├── apps/
+│   └── web/                   ← React + Vite (frontend)
+│       └── src/
+│           ├── components/    ← BirthChartForm, NatalPreview, Interpretaciones,
+│           │                     PlaceSearch, SavedChartsList, ApiStatus
+│           ├── api/           ← astromalik.ts (cliente REST)
+│           └── types/         ← natal.ts, chart.ts
+├── backend/
+│   ├── app/
+│   │   ├── main.py            ← FastAPI app + lifespan
+│   │   ├── astro_core.py      ← motor pyswisseph (NO TOCAR sin revisar AstroBot)
+│   │   ├── jd_local.py        ← hora local IANA → Julian Day UT
+│   │   ├── user_store.py      ← CRUD SQLite user.db
+│   │   ├── places.py          ← búsqueda de lugar
+│   │   └── routers/
+│   │       ├── charts.py      ← /api/charts/natal
+│   │       ├── places.py
+│   │       └── saved_charts.py
+│   ├── data/
+│   │   ├── corpus.db          ← 1766 interpretaciones (read-only)
+│   │   └── cities_seed.json   ← ciudades para búsqueda offline
+│   └── requirements.txt
+├── scraper/                   ← scrapers Python (ejecución local)
+├── corpus/
+│   └── schema.sql
+└── CONTEXT.md                 ← estado del proyecto para IA
+```
+
+---
+
+## Desarrollo local
+
+### Backend
+```bash
+cd backend
+python -m venv .venv
+.venv\Scripts\activate          # Windows
+pip install -r requirements.txt
+uvicorn app.main:app --host 127.0.0.1 --port 8765 --reload
+```
+
+### Frontend
+```bash
+cd apps/web
+npm install
+npm run dev                     # http://localhost:5173
+```
+
+El frontend hace proxy de `/api` → `http://127.0.0.1:8765` (configurado en `vite.config.ts`).
+
+---
+
+## Notas críticas para el motor de cálculo
+
+- **NO modificar** `backend/app/astro_core.py` sin comparar contra `malik-service-hub/apps/astrobot/astrobot.py`
+- Hora de nacimiento es **LOCAL**, nunca UTC — `jd_local.py` aplica el offset via `zoneinfo`
+- Sistema de casas: **Placidus** (`b'P'`) para natal, Regiomontanus (`b'R'`) para horaria
+- Carta de referencia para sanity check: `1976-10-11 20:33 Europe/Madrid` → Saturno Casa 4, ASC Géminis ~0°
+
+---
+
+## Próximos pasos
+
+- [ ] Módulo de tránsitos (cálculo de intensidad + textos del corpus)
+- [ ] Rueda SVG interactiva
+- [ ] Sinastría
+- [ ] Deploy: GitHub Pages (frontend) + HuggingFace Spaces Docker (backend)

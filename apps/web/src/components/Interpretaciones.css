@@ -1,0 +1,186 @@
+.interp {
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1.25rem;
+}
+
+.interp__heading {
+  margin: 0 0 1rem;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text);
+}
+
+/* ── Grupo ── */
+.interp__group {
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.interp__group-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.9rem;
+  background: var(--bg-elevated);
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  transition: background 0.15s;
+}
+
+.interp__group-btn:hover {
+  background: var(--accent-soft);
+}
+
+.interp__group-btn--open {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.interp__group-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.interp__group-label {
+  flex: 1;
+}
+
+.interp__group-count {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  background: var(--border);
+  padding: 0.1em 0.45em;
+  border-radius: 12px;
+}
+
+.interp__chevron {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ── Lista de items ── */
+.interp__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+
+/* ── Item individual ── */
+.interp__item {
+  border-bottom: 1px solid var(--border);
+}
+
+.interp__item:last-child {
+  border-bottom: none;
+}
+
+.interp__item-btn {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.55rem 0.9rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.83rem;
+  transition: background 0.12s;
+}
+
+.interp__item-btn:hover {
+  background: rgba(0, 0, 0, 0.025);
+}
+
+.interp__item--open .interp__item-btn {
+  background: rgba(139, 105, 20, 0.06);
+}
+
+.interp__item-titulo {
+  flex: 1;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.interp__item-fuente {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+.interp__item-chevron {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ── Cuerpo del texto ── */
+.interp__item-body {
+  padding: 0.75rem 1.1rem 0.9rem;
+  background: var(--bg-elevated);
+  font-size: 0.83rem;
+  line-height: 1.7;
+  color: var(--text);
+  border-top: 1px solid var(--border);
+}
+
+.interp__item-body p {
+  margin: 0 0 0.7em;
+}
+
+.interp__item-body p:last-child {
+  margin-bottom: 0;
+}
+
+.interp__item-credit {
+  margin-top: 0.75rem !important;
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.interp__item-subtitle {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 0.8em;
+}
+
+/* ── Subsecciones signo / casa dentro del mismo item ── */
+.interp__sub {
+  padding: 0 0 0.5rem;
+}
+
+.interp__sub + .interp__sub {
+  padding-top: 0.5rem;
+}
+
+.interp__sub-heading {
+  margin: 0 0 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.interp__divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0.75rem 0;
+}

@@ -1,0 +1,33 @@
+.api-status {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.api-status strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.api-status--ok {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.api-status__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2d7a4f;
+  box-shadow: 0 0 0 2px rgba(45, 122, 79, 0.25);
+}
+
+.api-status--pending {
+  color: var(--text-muted);
+}
+
+.api-status--error {
+  color: #8b2c2c;
+  max-width: 42rem;
+}
