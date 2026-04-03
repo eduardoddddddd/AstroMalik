@@ -111,6 +111,7 @@
 
 .interp__item-titulo {
   flex: 1;
+  min-width: 0;
   color: var(--text);
   font-weight: 500;
 }

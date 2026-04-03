@@ -20,7 +20,9 @@
 .birth-form__time24 {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.35rem;
+  row-gap: 0.25rem;
 }
 
 .birth-form__time-sep {
@@ -59,9 +61,11 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
+  min-width: 0;
 }
 
-@media (max-width: 480px) {
+/* En móvil y en layout de una columna, apilar fecha y hora (ver también index.css) */
+@media (max-width: 600px) {
   .birth-form__row {
     grid-template-columns: 1fr;
   }

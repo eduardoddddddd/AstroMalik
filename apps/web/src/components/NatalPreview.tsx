@@ -11,8 +11,8 @@ export function NatalPreview({ data }: Props) {
     return (
       <p className="natal-preview__placeholder">
         Pulsa <strong>Calcular carta</strong> con fecha, hora local, zona IANA y
-        lugar con coordenadas. Motor: mismo núcleo que AstroBot (Placidus,
-        pyswisseph).
+        lugar con coordenadas. Verás posiciones (Placidus, pyswisseph) y debajo
+        las interpretaciones del corpus cuando existan claves en la base.
       </p>
     )
   }
@@ -33,12 +33,16 @@ export function NatalPreview({ data }: Props) {
         <strong>MC</strong> {chart.mc.formatted}
       </p>
       <p className="natal-preview__utc">
-        UTC efemérides: <code>{time.utc_iso}</code>
+        <strong>Hora local</strong> (servidor, IANA): <code>{time.local_iso}</code>
       </p>
       <p className="natal-preview__utc">
-        Entrada usada: <code>{input.birth_date}</code> <code>{input.birth_time}</code>{' '}
-        <code>{input.timezone}</code> · lat <code>{input.latitude.toFixed(5)}</code> · lon{' '}
-        <code>{input.longitude.toFixed(5)}</code>
+        <strong>UT efemérides</strong> (lo usa pyswisseph): <code>{time.utc_iso}</code> ·{' '}
+        fracción diaria UT <code>{String(time.ut_fractional_hours)}</code> h
+      </p>
+      <p className="natal-preview__utc">
+        Petición API: fecha <code>{input.birth_date}</code>, hora local{' '}
+        <code>{input.birth_time}</code>, zona <code>{input.timezone}</code> · lat{' '}
+        <code>{input.latitude.toFixed(5)}</code> · lon <code>{input.longitude.toFixed(5)}</code>
       </p>
 
       <div className="natal-preview__scroll">

@@ -10,23 +10,25 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <div>
-          <h1 className="app-brand">AstroMalik</h1>
-          <p className="app-tagline">
-            Cartas natales, tránsitos y sinastría — corpus en castellano
-          </p>
+        <div className="app-shell app-header__row">
+          <div>
+            <h1 className="app-brand">AstroMalik</h1>
+            <p className="app-tagline">
+              Cartas natales, tránsitos y sinastría — corpus en castellano
+            </p>
+          </div>
+          <ApiStatus />
         </div>
-        <ApiStatus />
       </header>
 
-      <main className="app-main">
-        <section className="panel" aria-labelledby="panel-datos">
+      <main className="app-main app-shell">
+        <section className="panel panel--form" aria-labelledby="panel-datos">
           <h2 id="panel-datos" className="panel__title">
             Datos de nacimiento
           </h2>
           <p className="panel__subtitle">
-            Introduce los datos para calcular posiciones y enlazar textos del
-            corpus.
+            Introduce los datos y pulsa calcular: el servidor devuelve posiciones
+            y textos del corpus (planeta en signo/casa y aspectos natales).
           </p>
           <BirthChartForm onChartComputed={setNatal} />
         </section>
@@ -39,8 +41,8 @@ function App() {
             Carta e interpretaciones
           </h2>
           <p className="panel__subtitle">
-            Posiciones y casas (motor AstroBot / pyswisseph). Los textos del
-            corpus se enlazan en un siguiente paso.
+            Tras calcular verás la tabla de posiciones (Placidus, pyswisseph) y
+            abajo las interpretaciones disponibles en la base local.
           </p>
           <NatalPreview data={natal} />
         </section>

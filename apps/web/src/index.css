@@ -38,10 +38,13 @@
 body {
   margin: 0;
   min-height: 100svh;
+  overflow-x: hidden;
 }
 
 #root {
   min-height: 100svh;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 a {
@@ -67,15 +70,27 @@ code {
   flex-direction: column;
 }
 
+/* Ancho máximo común: cabecera y contenido alineados en cualquier viewport */
+.app-shell {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 1.75rem);
+  box-sizing: border-box;
+}
+
 .app-header {
-  padding: 1.25rem 1.75rem;
   border-bottom: 1px solid var(--border);
   background: var(--bg-elevated);
+}
+
+.app-header__row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 1rem 1.5rem;
   flex-wrap: wrap;
+  padding-block: 1.25rem;
 }
 
 .app-brand {
@@ -97,17 +112,19 @@ code {
 .app-main {
   flex: 1;
   width: 100%;
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 1.75rem 1.25rem 3rem;
+  padding-block: 1.75rem 3rem;
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.5rem;
+  align-items: start;
 }
 
-@media (min-width: 900px) {
+/* Dos columnas: formulario con ancho capado para no comer la carta / interpretaciones */
+@media (min-width: 960px) {
   .app-main {
-    grid-template-columns: minmax(280px, 380px) 1fr;
+    grid-template-columns:
+      minmax(280px, min(400px, 36vw))
+      minmax(320px, 1fr);
     align-items: start;
   }
 }
@@ -118,10 +135,31 @@ code {
   border-radius: 12px;
   box-shadow: var(--shadow);
   padding: 1.5rem 1.35rem;
+  min-width: 0;
+}
+
+/* Contenedor del formulario: si el panel es estrecho, el código React puede apilar filas vía CSS */
+.panel--form {
+  container-type: inline-size;
+  container-name: form-panel;
 }
 
 .panel--preview {
   min-height: 280px;
+  /* La columna derecha siempre reserva sitio mínimo para tabla + acordeones */
+  min-width: 0;
+}
+
+@container form-panel (max-width: 380px) {
+  .birth-form__row {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 959px) {
+  .birth-form__row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .panel__title {
