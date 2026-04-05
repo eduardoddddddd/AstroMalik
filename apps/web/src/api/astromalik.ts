@@ -1,5 +1,6 @@
 import type { BirthChartDraft, SavedChartRow } from '../types/chart'
 import type { NatalChartResponse } from '../types/natal'
+import type { TransitPeriodResponse } from '../types/transits'
 
 export type PlaceResult = {
   label: string
@@ -67,6 +68,43 @@ export async function fetchNatalChart(
   })
   if (!r.ok) {
     let msg = `natal ${r.status}`
+    try {
+      const err = await r.json()
+      if (err.detail) msg = String(err.detail)
+    } catch {
+      /* ignore */
+    }
+    throw new Error(msg)
+  }
+  return r.json()
+}
+
+export async function fetchTransitPeriod(input: {
+  birthDate: string
+  birthTime: string
+  timezone: string
+  latitude: number
+  longitude: number
+  fromDate: string
+  toDate: string
+  excludeMoon: boolean
+}): Promise<TransitPeriodResponse> {
+  const r = await fetch('/api/charts/transits', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      birth_date: input.birthDate,
+      birth_time: input.birthTime,
+      timezone: input.timezone,
+      latitude: input.latitude,
+      longitude: input.longitude,
+      from_date: input.fromDate,
+      to_date: input.toDate,
+      exclude_moon: input.excludeMoon,
+    }),
+  })
+  if (!r.ok) {
+    let msg = `transits ${r.status}`
     try {
       const err = await r.json()
       if (err.detail) msg = String(err.detail)

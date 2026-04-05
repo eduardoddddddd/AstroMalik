@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ApiStatus } from './components/ApiStatus'
 import { BirthChartForm } from './components/BirthChartForm'
 import { NatalPreview } from './components/NatalPreview'
+import { TransitsPanel } from './components/TransitsPanel'
 import type { NatalChartResponse } from './types/natal'
 
 function App() {
@@ -45,6 +46,7 @@ function App() {
             abajo las interpretaciones disponibles en la base local.
           </p>
           <NatalPreview data={natal} />
+          <TransitsPanel natal={natal} />
         </section>
       </main>
     </div>
