@@ -23,6 +23,7 @@ Aplicación web de astrología completa en castellano. Cartas natales con interp
 ### Backend (`backend/`)
 - FastAPI + uvicorn, puerto 8765
 - `POST /api/charts/natal` — calcula carta natal y devuelve posiciones + interpretaciones
+- `POST /api/charts/transits` — tránsitos por periodo con scoring de intensidad (1-5 ★)
 - `GET  /api/places/search` — búsqueda de lugar (seed + Nominatim)
 - `GET/POST/DELETE /api/saved-charts` — CRUD de cartas guardadas en `user.db`
 - `GET /api/health` + `GET /api/corpus/stats`
@@ -52,22 +53,24 @@ AstroMalik/
 │           └── types/         ← natal.ts, chart.ts
 ├── backend/
 │   ├── app/
-│   │   ├── main.py            ← FastAPI app + lifespan
+│   │   ├── config.py          ← CORPUS_DB y USER_DB centralizados (fuente única)
+│   │   ├── main.py            ← FastAPI app + lifespan + endpoints generales
 │   │   ├── astro_core.py      ← motor pyswisseph (NO TOCAR sin revisar AstroBot)
 │   │   ├── jd_local.py        ← hora local IANA → Julian Day UT
+│   │   ├── transits.py        ← algoritmo tránsitos + scoring + textos corpus
 │   │   ├── user_store.py      ← CRUD SQLite user.db
 │   │   ├── places.py          ← búsqueda de lugar
 │   │   └── routers/
-│   │       ├── charts.py      ← /api/charts/natal
-│   │       ├── places.py
-│   │       └── saved_charts.py
+│   │       └── charts.py      ← /api/charts/natal + /api/charts/transits
 │   ├── data/
 │   │   ├── corpus.db          ← 1766 interpretaciones (read-only)
 │   │   └── cities_seed.json   ← ciudades para búsqueda offline
 │   └── requirements.txt
-├── scraper/                   ← scrapers Python (ejecución local)
+├── scraper/                   ← scrapers Python (ejecución local, no se despliegan)
 ├── corpus/
 │   └── schema.sql
+├── scripts/
+│   └── dev/                   ← scripts de análisis/debug (excluidos de git)
 └── CONTEXT.md                 ← estado del proyecto para IA
 ```
 
@@ -97,16 +100,21 @@ El frontend hace proxy de `/api` → `http://127.0.0.1:8765` (configurado en `vi
 
 ## Notas críticas para el motor de cálculo
 
-- **NO modificar** `backend/app/astro_core.py` sin comparar contra `malik-service-hub/apps/astrobot/astrobot.py`
+- **NO modificar** `backend/app/astro_core.py` sin comparar contra el AstroBot original
 - Hora de nacimiento es **LOCAL**, nunca UTC — `jd_local.py` aplica el offset via `zoneinfo`
 - Sistema de casas: **Placidus** (`b'P'`) para natal, Regiomontanus (`b'R'`) para horaria
 - Carta de referencia para sanity check: `1976-10-11 20:33 Europe/Madrid` → Saturno Casa 4, ASC Géminis ~0°
+- Rutas de BD centralizadas en `backend/app/config.py` — nunca redefinir `CORPUS_DB` en otros módulos
 
 ---
 
 ## Próximos pasos
 
-- [ ] Módulo de tránsitos (cálculo de intensidad + textos del corpus)
+- [x] Módulo de tránsitos (cálculo de intensidad + textos del corpus)
 - [ ] Rueda SVG interactiva
-- [ ] Sinastría
+- [ ] Dark mode + transiciones suaves
+- [ ] Selector de zona horaria por lugar (deducir automáticamente de coordenadas)
+- [ ] Sinastría (endpoints + UI)
+- [ ] ErrorBoundary en frontend
+- [ ] Tests unitarios (jd_local, carta de referencia, tránsitos)
 - [ ] Deploy: GitHub Pages (frontend) + HuggingFace Spaces Docker (backend)
