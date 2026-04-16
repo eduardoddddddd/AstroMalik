@@ -2,19 +2,15 @@
 
 from __future__ import annotations
 
-import os
-
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app.astro_core import build_natal_interpretations, compute_natal_chart
+from app.config import CORPUS_DB
 from app.jd_local import julday_from_local_iana
 from app.transits import compute_transit_period
 
 router = APIRouter(prefix="/api/charts", tags=["charts"])
-
-_HERE = os.path.dirname(os.path.abspath(__file__))
-CORPUS_DB = os.path.join(_HERE, "..", "..", "data", "corpus.db")
 
 
 class NatalRequest(BaseModel):
@@ -48,7 +44,7 @@ def natal_chart(body: NatalRequest) -> dict:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     chart = compute_natal_chart(jd, body.latitude, body.longitude)
-    interpretations = build_natal_interpretations(chart, os.path.normpath(CORPUS_DB))
+    interpretations = build_natal_interpretations(chart, str(CORPUS_DB))
 
     return {
         "input": {

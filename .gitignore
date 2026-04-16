@@ -5,7 +5,6 @@ __pycache__/
 *.pyd
 .Python
 *.egg-info/
-dist/
 build/
 .eggs/
 
@@ -18,16 +17,8 @@ venv/
 logs/
 *.log
 
-# Ficheros temporales de debug/prueba (no son parte del proyecto)
-debug_*.py
-probe_*.py
-test_gemini.py
-delete_english.py
-run_debug.py
-test_scraper.py
-test_grupovenus.py
-mkdir_logs.bat
-run_astrolibrary.bat
+# Scripts de desarrollo/debug (movidos a scripts/dev/)
+scripts/dev/
 
 # Scrapers obsoletos/patch
 scraper/sources/astrolibrary_casas_patch.py
@@ -43,6 +34,7 @@ scraper/grupovenus_analysis.json
 
 # Node (frontend)
 node_modules/
+apps/web/dist/
 
 # Python API
 backend/.venv/

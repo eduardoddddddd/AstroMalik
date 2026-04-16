@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import os
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 import sqlite3
 from fastapi import FastAPI, HTTPException
@@ -14,13 +13,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from app import user_store
+from app.config import CORPUS_DB, DATA, USER_DB
 from app.places import merge_places
 from app.routers import charts as charts_router
 from app.user_store import delete_chart, get_one, init_db, insert_chart, list_saved
-
-ROOT = Path(__file__).resolve().parents[1]
-DATA = ROOT / "data"
-CORPUS_DB = DATA / "corpus.db"
 
 
 @asynccontextmanager

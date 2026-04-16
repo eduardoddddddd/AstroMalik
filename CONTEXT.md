@@ -11,11 +11,11 @@ Actualizar este archivo al final de cada sesión. Es la memoria del proyecto.
 Aplicación web de astrología completa, en castellano, con:
 - Cartas natales con interpretaciones de alta calidad
 - Tránsitos por intensidad y rango de fechas (estilo Grupo Venus)
-- Sinastría
-- Corpus de textos scrapeado de internet, multiautor, en castellano
+- Sinastría (pendiente)
+- Corpus de textos scrapeado de internet, multiautor, en castellano — **1766 filas**
 
 **Nombre:** AstroMalik
-**Repositorio GitHub:** https://github.com/eduardoddddddd/AstroMalik (pendiente crear)
+**Repositorio GitHub:** https://github.com/eduardoddddddd/AstroMalik
 **HuggingFace Space:** pendiente crear
 **Inicio del proyecto:** 2026-03-29
 
@@ -28,83 +28,89 @@ Aplicación web de astrología completa, en castellano, con:
 3. **Textos en castellano** — si la fuente es inglés, traducir al importar al corpus
 4. **Multiautor** — cada interpretación lleva fuente; la misma clave puede tener múltiples entradas de distintos autores
 5. **Rueda SVG interactiva** — viewBox relativo, touch-friendly, tap en planeta muestra aspectos
-6. **Sin base de datos de servidor** — corpus.db SQLite empaquetado en Docker; cartas de usuario en localStorage o Supabase
+6. **Sin base de datos de servidor** — corpus.db SQLite empaquetado en Docker; cartas de usuario en user.db local
 
 ---
 
-## Stack Tecnológico
+## Stack Tecnológico (REAL)
 
 ```
-FRONTEND  → GitHub Pages
-           HTML5 + CSS Grid/Flexbox (sin framework CSS)
-           Alpine.js (reactividad ligera, ~8kb)
-           JS vanilla
-           SVG rueda generada dinámicamente
+FRONTEND  → apps/web/
+           React 18 + TypeScript
+           Vite (dev server + build)
+           CSS Modules por componente
+           Sin framework CSS externo
 
-BACKEND   → HuggingFace Spaces (Docker, CPU free)
+BACKEND   → backend/ (FastAPI + uvicorn, puerto 8765)
            Python 3.11
-           FastAPI
-           pyswisseph (efemérides)
-           SQLite (corpus.db, read-only)
+           FastAPI + Pydantic
+           pyswisseph (efemérides Swiss Ephemeris)
+           SQLite read-only (corpus.db) + SQLite write (user.db)
 
-DATOS USUARIO → localStorage (MVP) → Supabase (v2)
+DATOS USUARIO → user.db local (SQLite en backend/data/)
 
-SCRAPER   → Scripts Python locales (no se despliegan)
+SCRAPER   → scraper/ — Scripts Python locales (no se despliegan)
            requests + BeautifulSoup4
-           googletrans / deep-translator (traducción)
+           deep-translator (Google Translate, sin cuota)
            Ejecutar localmente, generar corpus.db
 ```
 
 ---
 
-## Estructura del Repositorio
+## Estructura del Repositorio (REAL)
 
 ```
 AstroMalik/
 ├── CONTEXT.md              ← ESTE ARCHIVO (actualizar siempre)
-├── README.md
+├── README.md               ← Resumen para humanos/GitHub
+├── .gitignore
+├── apps/
+│   └── web/               ← Frontend React + Vite
+│       ├── src/
+│       │   ├── App.tsx
+│       │   ├── config.ts  ← API_BASE (VITE_API_BASE env)
+│       │   ├── index.css
+│       │   ├── api/
+│       │   │   └── astromalik.ts  ← cliente REST
+│       │   ├── components/
+│       │   │   ├── BirthChartForm.tsx
+│       │   │   ├── NatalPreview.tsx
+│       │   │   ├── Interpretaciones.tsx
+│       │   │   ├── PlaceSearch.tsx
+│       │   │   ├── SavedChartsList.tsx
+│       │   │   └── ApiStatus.tsx
+│       │   └── types/
+│       │       ├── natal.ts
+│       │       └── chart.ts
+│       ├── index.html
+│       ├── vite.config.ts  ← proxy /api → localhost:8765
+│       └── package.json
 ├── backend/
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   ├── main.py             ← FastAPI app principal
-│   ├── api/
-│   │   ├── carta.py        ← endpoints carta natal
-│   │   ├── transitos.py    ← endpoints tránsitos
-│   │   └── sinastria.py    ← endpoints sinastría
-│   ├── engine/
-│   │   ├── calculos.py     ← pyswisseph wrapper
-│   │   ├── transitos.py    ← algoritmo tránsitos + intensidad
-│   │   └── aspectos.py     ← cálculo de aspectos
-│   ├── models/
-│   │   └── corpus.py       ← acceso a corpus.db
-│   └── data/
-│       └── corpus.db       ← generado por scraper (no editar a mano)
-├── frontend/
-│   ├── index.html          ← SPA principal
-│   ├── static/
-│   │   ├── css/
-│   │   │   └── main.css
-│   │   └── js/
-│   │       ├── app.js
-│   │       ├── rueda.js    ← SVG rueda astral
-│   │       └── transitos.js
-│   └── templates/          ← partials HTML
-├── scraper/
-│   ├── README.md
-│   ├── run_all.py          ← ejecutar todos los scrapers
-│   ├── sources/
-│   │   ├── cafe_astrology.py
-│   │   ├── astro_com.py
-│   │   ├── astrology_king.py
-│   │   └── skyscript.py
-│   ├── translator.py       ← wrapper de traducción ES
-│   ├── normalizer.py       ← limpieza y normalización
-│   └── build_corpus.py     ← genera corpus.db final
+│   ├── app/
+│   │   ├── config.py       ← CORPUS_DB, USER_DB (rutas centralizadas)
+│   │   ├── main.py         ← FastAPI app + lifespan + endpoints generales
+│   │   ├── astro_core.py   ← motor pyswisseph (NO TOCAR sin revisar AstroBot)
+│   │   ├── jd_local.py     ← hora local IANA → Julian Day UT
+│   │   ├── transits.py     ← algoritmo tránsitos + intensidad + corpus
+│   │   ├── user_store.py   ← CRUD SQLite user.db
+│   │   ├── places.py       ← búsqueda de lugar (seed + Nominatim)
+│   │   └── routers/
+│   │       └── charts.py   ← /api/charts/natal y /api/charts/transits
+│   ├── data/
+│   │   ├── corpus.db       ← 1766 interpretaciones (read-only)
+│   │   ├── user.db         ← cartas guardadas (write, excluido de git)
+│   │   └── cities_seed.json
+│   └── requirements.txt
 ├── corpus/
 │   └── schema.sql          ← definición de tablas
-└── docs/
-    ├── diseno.md           ← decisiones de diseño
-    └── claves.md           ← catálogo de claves del corpus
+├── scraper/                ← scrapers Python (ejecución local, no se despliegan)
+│   ├── sources/
+│   │   ├── astrology_king.py
+│   │   ├── astrolibrary.py
+│   │   └── grupo_venus.py
+│   └── ...
+└── scripts/
+    └── dev/               ← scripts de debug/análisis/prueba (excluidos de git)
 ```
 
 ---
@@ -118,19 +124,19 @@ CREATE TABLE interpretaciones (
     -- valores: natal_planeta_signo | natal_planeta_casa |
     --          aspecto_natal | transito | sinastria
     clave        TEXT NOT NULL,
-    -- formato por tipo (ver docs/claves.md):
+    -- formato por tipo:
     --   natal_planeta_signo:  SOL_ARIES
     --   natal_planeta_casa:   SOL_CASA_1
     --   aspecto_natal:        SOL_LUNA_CONJUNCION
     --   transito:             SATURNO_tr_SOL_CONJUNCION
     --   sinastria:            SYN_SOL_LUNA_CONJUNCION
-    autor        TEXT,          -- nombre del autor / sitio
-    fuente_url   TEXT,          -- URL original
-    fuente_nombre TEXT,         -- nombre legible de la fuente
-    idioma_origen TEXT DEFAULT 'es',  -- 'en' si fue traducido
-    texto_corto  TEXT,          -- 2-3 líneas resumen
-    texto_largo  TEXT NOT NULL, -- interpretación completa
-    calidad      INTEGER DEFAULT 3,  -- 1-5
+    autor        TEXT,
+    fuente_url   TEXT,
+    fuente_nombre TEXT,
+    idioma_origen TEXT DEFAULT 'es',
+    texto_corto  TEXT,
+    texto_largo  TEXT NOT NULL,
+    calidad      INTEGER DEFAULT 3,
     fecha_scrape TEXT,
     UNIQUE(clave, fuente_url)   -- permite multiautor, no duplicados
 );
@@ -141,87 +147,33 @@ CREATE INDEX idx_clave ON interpretaciones(clave);
 
 ---
 
-## Módulo de Tránsitos — Algoritmo de Intensidad
+## Corpus — Estado Actual (1766 filas)
 
-```python
-PESOS_PLANETA_TRANSITO = {
-    'PLUTON': 5, 'NEPTUNO': 4, 'URANO': 4,
-    'SATURNO': 3, 'JUPITER': 2,
-    'MARTE': 1, 'SOL': 1, 'VENUS': 1, 'MERCURIO': 0
-}
-PESOS_PUNTO_NATAL = {
-    'ASC': 5, 'MC': 5, 'SOL': 4, 'LUNA': 4,
-    'SATURNO': 3, 'MARTE': 3, 'VENUS': 2,
-    'JUPITER': 2, 'MERCURIO': 1, 'VENUS': 2
-}
-PESOS_ASPECTO = {
-    'CONJUNCION': 5, 'OPOSICION': 4, 'CUADRADO': 3,
-    'TRIGONO': 2, 'SEXTIL': 1
-}
-# Intensidad final = media ponderada, 1-5 estrellas
-# +0.5 si planeta retrógrado toca más de una vez
-```
+| Tipo | Filas | Fuentes | Cobertura |
+|------|-------|---------|-----------|
+| `transito` | 745 | Grupo Venus + Astrology King | 99% |
+| `sinastria` | 420 | Grupo Venus | 93% |
+| `aspecto_natal` | 368 | Astrology King + Café Astrology | 92% |
+| `natal_planeta_signo` | 113 | Astrolibrary | 100% real |
+| `natal_planeta_casa` | 120 | Astro-seek | 100% |
 
 ---
 
-## Estado Actual del Proyecto
+## Módulo de Tránsitos — Algoritmo de Intensidad
 
-### ✅ Completado
-- Diseño de arquitectura general
-- Esquema de base de datos corpus.db
-- Sistema de claves de interpretación
-- Algoritmo de intensidad de tránsitos
-- Estructura de carpetas y repo git local
-- CONTEXT.md (este archivo)
-
-### 🔄 En Progreso
-- **Scraper Grupo Venus**
-  - `transiaw` validado para `transito`
-  - `tracompu` validado para `sinastria`
-  - `starsolu` descartado por ahora: devuelve contenido externo en inglés ("Starlight Solutions")
-  - Cobertura actual en `corpus.db`:
-    - `transito`: 354 filas
-    - `sinastria`: 375 filas
-  - Investigación natal:
-    - `info.asp?bypass` revela informes natales con IDs (`61` SuperNatal, `62` Carta Natal, `170` Carta Natal con Quirón)
-    - Flujo detectado: `info.asp?bypass` → `informes3.asp`
-    - Bloqueo actual: el acceso libre termina en solicitud por email/lote gratis, no devuelve el informe natal completo en HTML inmediato
-    - Conclusión actual: GV es excelente para `transito` y `sinastria`; para `natal` todavía no hay extractor limpio
-- **Scraper Café Astrology**
-  - Estado: despriorizado
-  - Motivo: aunque `aspecto_natal` funciona, la cobertura es pobre y la prioridad del proyecto pasa a exprimir mejor `Grupo Venus` + nuevas fuentes más directas
-  - `natal_planeta_signo`, `natal_planeta_casa` y `transito` quedan congelados
-- **Evaluación de nueva fuente: Astrology King**
-  - Estado: operativo
-  - Páginas estables y legibles como `Sun Square Saturn Natal and Transit`
-  - Una misma URL suele contener secciones `Natal` y `Transit`, útiles para extraer ambos textos con parser por encabezados
-  - Regla aplicada: si la fuente original está en inglés, se traduce antes de insertar; si la traducción falla, la fila se descarta
-  - Cobertura actual en `corpus.db`:
-    - `aspecto_natal`: 334 filas
-    - `transito`: 391 filas
-  - Encaje actual:
-    - `aspecto_natal`: sí
-    - `transito`: sí
-    - `sinastria`: no prioritaria por ahora
-    - `planeta_signo` / `planeta_casa`: no parece fuente principal
-  - Observación: algunas URLs del índice no traen bloque útil de tránsito y se descartan automáticamente
-- **Robert Hand / Planets in Transit**
-  - Valor editorial alto como referencia de calidad para el módulo de tránsitos
-  - No usar como corpus scrapeado desde Internet Archive
-  - Motivo: obra con copyright y acceso restringido (`Access-restricted-item`) en Archive
-  - Decisión: solo puede servir como referencia conceptual o como material de trabajo si el usuario aporta una copia legítima propia
-
-### ⏳ Pendiente
-- Scraper Astro.com (interpretaciones Liz Greene)
-- Scraper Skyscript (tradicional)
-- FastAPI backend básico
-- Motor pyswisseph wrapper
-- HTML responsive shell
-- Rueda SVG responsive
-- Deploy HuggingFace Spaces
-- Deploy GitHub Pages
-- Módulo sinastría
-- Supabase para persistencia multidevice
+```python
+PLANET_WEIGHTS = {
+    'PLUTON': 10, 'NEPTUNO': 9, 'URANO': 8,
+    'SATURNO': 7, 'JUPITER': 6,
+    'MARTE': 4, 'VENUS': 2, 'MERCURIO': 2, 'SOL': 2, 'LUNA': 1,
+}
+ASPECT_WEIGHTS = {
+    'CONJUNCION': 5, 'OPOSICION': 4.5, 'CUADRADO': 4,
+    'TRIGONO': 3, 'SEXTIL': 2,
+}
+# Score = planet_weight × aspect_weight × orb_factor
+# Stars: ≥25 → 5★, ≥15 → 4★, ≥8 → 3★, ≥3 → 2★, else → 1★
+```
 
 ---
 
@@ -229,25 +181,48 @@ PESOS_ASPECTO = {
 
 | Decisión | Elección | Motivo |
 |----------|----------|--------|
-| Frontend | HTML + Alpine.js | Sin build step, hosting estático puro |
-| Backend | FastAPI | Async, HF-friendly, docs automáticas |
-| Corpus | SQLite empaquetado | Sin servidor BD, portable |
-| Cartas usuario | localStorage | Sin infraestructura, MVP rápido |
-| Responsive | CSS Grid nativo | Sin dependencias, control total |
-| Rueda | SVG viewBox relativo | Escala perfecta en cualquier pantalla |
-| Textos | Multiautor por clave | Riqueza interpretativa, misma situación varios autores |
+| Frontend | React + TypeScript + Vite | Componentes, tipado fuerte, hot-reload |
+| Backend | FastAPI + uvicorn | Async, documentación automática, HF-friendly |
+| Corpus | SQLite empaquetado | Sin servidor BD, portable, read-only |
+| Cartas usuario | SQLite local (user.db) | Sin infraestructura, MVP rápido |
+| Zona horaria | `zoneinfo` + `tzdata` | Estándar Python 3.9+, sin pytz |
+| Casas | Placidus para natal | Igual que AstroBot original |
+| Textos | Multiautor por clave | UNIQUE(clave, fuente_url) |
+| Config rutas | `app/config.py` | CORPUS_DB/USER_DB centralizados |
 
 ---
 
-## Notas para Claude / Codex
+## Notas Críticas para el Motor de Cálculo
 
-- **Idioma del código:** inglés para código, comentarios en castellano
-- **Idioma de datos:** todo en castellano en la BD (traducir en el scraper)
-- **Rueda SVG:** nunca píxeles fijos, siempre viewBox="0 0 800 800" y porcentajes
-- **pyswisseph:** siempre Placidus para cartas natales, Regiomontanus solo para horary
-- **Timezone gotcha:** la hora de nacimiento es LOCAL, no UTC — siempre aplicar offset antes de swe.julday()
-- **Multiautor:** UNIQUE(clave, fuente_url) — la misma clave puede tener N filas de distintas fuentes
-- **Calidad fuentes:** astro.com=5, cafe_astrology=4, astrology_king=4, skyscript=3
+- **NO modificar** `backend/app/astro_core.py` sin comparar contra el AstroBot original
+- Hora de nacimiento es **LOCAL**, nunca UTC — `jd_local.py` aplica el offset via `zoneinfo`
+- Sistema de casas: **Placidus** (`b'P'`) para natal, Regiomontanus (`b'R'`) para horaria
+- **Carta de referencia:** `1976-10-11 20:33 Europe/Madrid` → Saturno Casa 4, ASC Géminis ~0°
+- `CORPUS_DB` y `USER_DB` → importar siempre desde `app.config`, nunca redefinir en módulos
+
+---
+
+## Estado del Proyecto
+
+### ✅ Completado
+- Corpus de 1766 textos (transito, sinastria, aspecto_natal, natal_planeta_signo, natal_planeta_casa)
+- Backend FastAPI: carta natal (`/api/charts/natal`) con posiciones + interpretaciones
+- Backend FastAPI: tránsitos (`/api/charts/transits`) con scoring + textos corpus
+- Backend FastAPI: places search (seed + Nominatim), saved-charts CRUD, health, corpus/stats
+- Frontend React: BirthChartForm, NatalPreview, Interpretaciones, PlaceSearch, SavedChartsList
+- Motor pyswisseph: cálculo natal completo (planetas, casas Placidus, ASC/MC)
+- Motor de tránsitos: scoring por intensidad, agrupación de eventos
+- Limpieza arquitectural: carpetas vacías eliminadas, scripts a `scripts/dev/`, config.py centralizado
+
+### 🔄 En Progreso / Próximos pasos
+- [ ] Rueda SVG interactiva (el feature bandera)
+- [ ] Dark mode + transiciones suaves
+- [ ] Selector de zona horaria inteligente (por lugar/coordenadas)
+- [ ] Módulo de sinastría (endpoints + UI)
+- [ ] ErrorBoundary en frontend
+- [ ] Tests unitarios (jd_local, carta de referencia, tránsitos)
+- [ ] Logging básico en backend
+- [ ] Deploy: HuggingFace Spaces (backend) + GitHub Pages (frontend)
 
 ---
 
@@ -260,115 +235,43 @@ PESOS_ASPECTO = {
 - Sistema de claves de interpretación definido
 - Algoritmo de intensidad de tránsitos diseñado
 - Creación estructura de carpetas y repo git
-- Inicio scraper Café Astrology (próximo paso)
 
 ### 2026-03-29 — Sesión 2 (Codex)
 - Auditoría del estado real del repo local
-- Validación de `Grupo Venus`
-  - `transiaw` OK
-  - `tracompu` OK
-  - `starsolu` descartado
-- Confirmación de que el parser de sitemaps de Café Astrology funciona si se completa
-- Generado `scraper/cafe_astrology_urls.json` con URLs reales clasificadas
-- Reorientación del scraper de Café Astrology para priorizar solo entradas de alta confianza
-- Carga real de corpus:
-  - `transito`: 354 filas de Grupo Venus
-  - `sinastria`: 375 filas de Grupo Venus
-  - `aspecto_natal`: 34 filas de Café Astrology
-  - Fila heredada de `Grupo Venus/starsolu` eliminada por no ser fuente fiable
-  - Total actual en `backend/data/corpus.db`: 763 filas
-- Investigación adicional:
-  - Detectado el menú natal de Grupo Venus con IDs internos (`61`, `62`, `170`)
-  - Comprobado que el acceso libre a natal deriva a solicitud por email, no a HTML inmediato reutilizable
-  - Decisión de producto: bajar prioridad de Café Astrology y buscar nuevas fuentes natales/aspectos más directas
-  - Evaluado `Astrology King` como siguiente fuente:
-    - estructura simple
-    - URLs estables
-    - artículos con secciones `Natal` + `Transit` aprovechables
-  - Implementado `scraper/sources/astrology_king.py`
-  - Carga real adicional del corpus:
-    - `aspecto_natal`: 334 filas de Astrology King
-    - `transito`: 391 filas de Astrology King
-    - Total actual en `backend/data/corpus.db`: 1488 filas
-  - Regla reforzada: en la BD solo entra texto en castellano; si falla la traducción, se descarta la fila
-  - Decisión adicional:
-    - `Robert Hand / Planets in Transit` no se usa como fuente scrapeada desde Internet Archive por copyright y acceso restringido
+- Validación de `Grupo Venus` (transiaw OK, tracompu OK, starsolu descartado)
+- Carga inicial: transito 354 filas GV, sinastria 375 filas GV
+- Implementado scraper Astrology King
+- Carga adicional: aspecto_natal 334 filas AK, transito 391 filas AK
+- Total: 1488 filas
 
 ### 2026-03-30 — Sesión 3 (Claude)
-- Retomado el proyecto tras sesión 2 con Codex
-- Verificado estado real del corpus.db:
-  - `transito`:       745 filas (354 GV + 391 AK)  ✅
-  - `sinastria`:      375 filas (GV)               ✅
-  - `aspecto_natal`:  368 filas (334 AK + 34 CA)   ✅
-  - `natal_planeta_signo`:  0 filas                ❌ — AGUJERO PRINCIPAL
-  - `natal_planeta_casa`:   0 filas                ❌ — AGUJERO PRINCIPAL
-  - TOTAL: 1488 filas
-- Situación: el corpus de tránsitos, sinastría y aspectos está bien cubierto
-- El problema urgente es la ausencia total de textos natales (planeta en signo / planeta en casa)
-- Opciones debatidas con el usuario:
-  - Arreglar scraper CA para tapar el agujero natal (URLs reales son slugs WordPress /sun-in-aries/)
-  - Comenzar backend FastAPI + motor pyswisseph
-  - Ambas en paralelo
-- Motor de traducción pendiente de decidir: deep-translator/Google vs DeepL vs Gemini API
-- Pendiente: decisión del usuario sobre siguiente paso
+- Verificación cobertura corpus.db
+- Sinastría: ejecutado fill_sinastria.py → 420/450 (93%) — efectivamente completa
+- Elegidas fuentes para natal: astrolibrary.org (signos), astro-seek.com (casas)
 
 ### 2026-03-30 — Sesión 4 (Claude)
-- Verificada cobertura real del corpus con check_coverage.py:
-  - transito:       328/330  (99%) — 2 faltantes son combinaciones astronómicamente imposibles ✅
-  - sinastria:      375/450  (83%) — 75 huecos detectados
-  - aspecto_natal:  208/225  (92%) — 17 faltantes son aspectos imposibles ✅
-- Ejecutado fill_sinastria.py: +45 filas insertadas (todos los LUNA_X via URL inversa GV)
-  - Resultado: sinastria 420/450 (93%) — 30 irrecuperables son planetas transpersonales entre sí ✅
-  - sinastria efectivamente COMPLETA para uso práctico
-- Exploración de fuentes para natal_planeta_signo y natal_planeta_casa:
-  - Probados: astrolibrary.org, astro-seek.com, astrotheme.com, astromatrix.org, astro.com
-  - astro.com: JavaScript wall, inaccesible ❌
-  - astromatrix.org: timeout ❌
-  - astrotheme.com: responde pero solo devuelve nav/ephemeris, sin texto interpretativo ❌
-  - **astrolibrary.org: ELEGIDA para natal_planeta_signo** ✅
-    - URL: /interpretations/[planeta]/  (ej: /interpretations/sun/)
-    - Una página por planeta con los 12 signos (H2/H3 por signo)
-    - Solo 10 peticiones HTTP para los 120 textos
-    - Calidad alta, textos propios de Astrolibrary
-    - Textos en inglés → traducir con Gemini API
-  - **astro-seek.com: ELEGIDA para natal_planeta_casa** ✅
-    - URL: /[planeta]-in-[N]th-house-astrology-meaning  (ej: /sun-in-1st-house-astrology-meaning)
-    - Patrón limpio y consistente para los 120 textos (10 planetas × 12 casas)
-    - Textos en inglés → traducir con Gemini API
-- Creado: scraper/sources/astrolibrary.py (signos + casas)
-  - dry-run validado: 12/12 signos para Sol extraídos correctamente
-  - Textos de 2000-4500 chars por entrada, calidad excelente
-  - PENDIENTE: configurar GEMINI_API_KEY para ejecutar real
-    - El usuario debe ejecutar: set GEMINI_API_KEY=su_clave
-    - Luego: python scraper/sources/astrolibrary.py --tipo signos
-    - Y:     python scraper/sources/astrolibrary.py --tipo casas
-
-### Estado corpus.db tras sesión 4:
-- transito:              745 filas  (99%) ✅
-- sinastria:             420 filas  (93%) ✅ efectivamente completo
-- aspecto_natal:         368 filas  (92%) ✅
-- natal_planeta_signo:     0 filas   (0%) ← PENDIENTE ejecutar con GEMINI_API_KEY
-- natal_planeta_casa:      0 filas   (0%) ← PENDIENTE ejecutar con GEMINI_API_KEY
-- TOTAL: 1533 filas
-
-### Próximos pasos
-1. Configurar GEMINI_API_KEY y ejecutar astrolibrary.py --tipo all
-   → Objetivo: +120 natal_planeta_signo + 120 natal_planeta_casa = ~240 nuevas filas
-2. Con corpus completo, pasar a backend FastAPI + motor pyswisseph
+- Cobertura verificada: transito 99%, sinastria 93%, aspecto_natal 92%
+- Implementado scraper astrolibrary.py (signos + casas)
+- Traducción con deep-translator (Google Translate, sin cuota)
 
 ### 2026-03-30 — Sesión 5 (Claude)
-- **CORPUS COMPLETADO** — 1766 filas totales en corpus.db
-  - transito:           745 filas  (99%)  ✅ — 2 huecos = aspectos astronómicamente imposibles
-  - sinastria:          420 filas  (93%)  ✅ — 30 huecos = planetas transpersonales entre sí
-  - aspecto_natal:      368 filas  (92%)  ✅ — 17 huecos = aspectos imposibles (Sol cuadrado Mercurio, etc.)
-  - natal_planeta_signo: 113 filas (100% real) ✅ — algunos planetas lentos solo cubren los signos posibles
-  - natal_planeta_casa:  120 filas (100%) ✅ — 10 planetas × 12 casas
-- Fuentes usadas:
-  - Grupo Venus → transito + sinastria (castellano nativo)
-  - Astrology King → aspecto_natal + transito adicional (traducido)
-  - Astrolibrary.org → natal_planeta_signo + natal_planeta_casa (traducido con deep-translator)
-- Motor de traducción: deep-translator (Google Translate, sin cuota, sin API key)
-  - Calidad verificada: buena para textos astrológicos
-  - Gemini API (cuota agotada en sesión) — puede usarse después para re-traducir si se desea mejorar calidad
+- **CORPUS COMPLETADO** — 1766 filas totales
+  - natal_planeta_signo: 113 filas (astrolibrary, traducido)
+  - natal_planeta_casa: 120 filas (astro-seek, traducido)
+- **Próximo paso:** backend FastAPI
 
-### ✅ CORPUS TERMINADO — Próximo paso: BACKEND FastAPI
+### 2026-04-05 — Sesión 6 (Claude/Codex)
+- Backend FastAPI implementado: main.py, astro_core.py, jd_local.py, transits.py
+- Frontend React: BirthChartForm, NatalPreview, Interpretaciones, PlaceSearch
+- Motor de tránsitos con scoring por intensidad operativo
+- Deploy en GCP VM (contenedor `astro-api`, puerto 8765)
+
+### 2026-04-16 — Sesión 7 (Claude)
+- Revisión arquitectural completa: identificados 17 puntos de mejora
+- **Fase 1 (Limpieza) ejecutada:**
+  - Eliminadas 7 carpetas vacías fantasma (frontend/, backend/api/, backend/engine/, etc.)
+  - 18 scripts/archivos de debug movidos a `scripts/dev/`
+  - `.gitignore` actualizado (apps/web/dist/, scripts/dev/)
+  - `backend/app/config.py` creado — CORPUS_DB y USER_DB centralizados
+  - `main.py`, `charts.py`, `transits.py` actualizados para importar de config.py
+  - `CONTEXT.md` reescrito para reflejar el stack real (React + Vite, no Alpine.js)

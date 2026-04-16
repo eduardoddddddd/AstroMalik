@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import date, timedelta
-from pathlib import Path
 
 from app.astro_core import (
     ASPECTS,
@@ -14,9 +13,8 @@ from app.astro_core import (
     find_transit_aspects,
     get_interpretacion_transito,
 )
+from app.config import CORPUS_DB
 from app.jd_local import julday_from_local_iana
-
-CORPUS_DB = Path(__file__).resolve().parents[1] / "data" / "corpus.db"
 EVENT_GAP_DAYS = 5
 MAX_PERIOD_DAYS = 3660
 

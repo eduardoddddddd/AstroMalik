@@ -1,0 +1,12 @@
+Corpus completo: 1766 textos astrologicos en castellano
+
+natal_planeta_signo: 113 filas (Astrolibrary, planetas x signos)
+natal_planeta_casa: 120 filas (Astrolibrary, planetas x casas)
+transito: 745 filas (Grupo Venus + Astrology King, 99%)
+sinastria: 420 filas (Grupo Venus, 93%)
+aspecto_natal: 368 filas (Astrology King + Cafe Astrology, 92%)
+
+Scrapers: grupo_venus.py, astrology_king.py, astrolibrary.py
+Motor traduccion: deep-translator sin cuota
+Utilidades: check_corpus.py, check_coverage.py, fill_sinastria.py
+CONTEXT.md actualizado con historial completo
